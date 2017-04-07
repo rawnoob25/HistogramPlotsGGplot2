@@ -1,0 +1,58 @@
+---
+title: "Histogram Plots"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Histograms of various features of the mtcars dataset  
+If we'd like the ability to plot different values of the 'cyl' and 'am' variables
+of the mtcars dataset in different colors, we'll need to transform those variables into factors.
+
+```{r}
+myMtCars<- transform(mtcars,cyl=factor(cyl),am=factor(am))
+```
+
+A standard histogram of the mpg variable colored by levels of the cyl variable. Note that the default plot will be in a stacked format.
+
+```{r}
+library(ggplot2)
+ggplot(data=myMtCars,aes(x=mpg,fill=cyl))+geom_histogram(binwidth=2)
+```
+
+If we'd like to see more clearly the share of one bin occupied by a particular level of the cyl variable, we can change the position parameter to "fill" in the geom_histogram() function call. But note that in this plot, we lose information about the counts.
+```{r}
+ggplot(data=myMtCars,aes(x=mpg,fill=cyl))+geom_histogram(binwidth=2,position="fill")
+
+```
+
+If we'd like to see the cyl levels occupying a particular histogram bin side-by-side instead of stacked, we can pass the parameter position="dodge" to the geom_histogram() function call. You'll notice below that even though the binwidth is the same as in the above two plots (binwidth=2), the bins are spaced out so that different levels of the cyl variable occupying the same bin are not confused with different bins. This is an issue when we're placing the different levels of the cyl variable occupying the same histogram bin side-by-side in the histogram (as in the position="dodge" conformation) but not in a stacked conformation. 
+
+```{r}
+ggplot(data=myMtCars,aes(x=mpg,fill=cyl))+geom_histogram(binwidth=2,position="dodge")
+```
+
+One more way to display the same information is by passing the position="identity" parameter to the geom_histogram() function call. This overlays the bars for various levels of the cyl variable occupying a particular histogram bin. To avoid one bar covering up another, we'll need to make the bars partially transparent by adjusting the alpha levels. We'll set alpha=0.3; this means 30% opaque (or 70% transparent). We'll add the call to scale_alpha passing in the parameter guide w/ value 'none' so that the alpha level doesn't show up in the legend. Comparing the below plot with the one above, notice how wherever 6 cylinders (green) and 8 cylinders (blue) share a bin in the above plot, those same regions appear turquoise in the below plot. 
+
+```{r}
+ggplot(data=myMtCars,aes(x=mpg,fill=cyl,alpha=0.3))+geom_histogram(binwidth=2,position="identity")+scale_alpha(guide='none')
+```
+
+
+What about if we wanted to present the same information as in the above plot, but make one plot for each level of the 'am' (automatic/manual) variable...how would we do that? See the below code chunk for the answer.
+
+```{r}
+ggplot(data=myMtCars,aes(x=mpg,fill=cyl,alpha=0.3))+geom_histogram(binwidth=2,position="identity")+scale_alpha(guide='none')+facet_grid(.~am)
+```
+
+Note that the parameters to facet_grid are of the form facet_grid(m~n) where 'm' is the variable whose levels will occupy the rows and 'n' is the variable whose levels will occupy the columns. When a dot ('.') is present instead of a variable name, it means that the plot will contain only one level of that dimension (in the above case there's only one row). If wanted only one column, but the various rows to be the plots for the levels of the 'am' variable, we'd have coded  
+   facet_grid(am~.)
+
+Below is the same as the above plot, but in a typical stacked position. With a stacked position (this is the default setting if you don't specify a position parameter to the geom_histogram() function), there's no need to make the histogram partially transparent (so there's no mention of an alpha level in the code). 
+
+```{r}
+ggplot(data=myMtCars,aes(x=mpg,fill=cyl))+geom_histogram(binwidth=2)+facet_grid(.~am)
+```
+
